@@ -1,3 +1,4 @@
+
 let toneMap = [
     { "tag": ["/j", "joking"], "colors": ["#BFFCC6", "#0d7a1a"] },
     { "tag": ["/hj", "half joking"], "colors": ["#D8FFD6", "#0d7a1a"] },
@@ -62,30 +63,36 @@ function replace(text) {
  * https://github.com/Woundorf/foxreplace/blob/master/COPYING
  */
 
-
-let textNodesXpath = "/html/head/title/text()"
-    + "|/html/body//text()[not(parent::script)]";
-let textNodes = document.evaluate(textNodesXpath, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
-let nTextNodes = textNodes.snapshotLength;
-for (let i = 0; i < nTextNodes; i++) {
-    let textNode = textNodes.snapshotItem(i);
-    let originalText = textNode.textContent;
-    let replacedText = replace(originalText);
-    if (originalText != replacedText) {
-        let parser = new DOMParser();
-        let doc = parser.parseFromString(replacedText, "text/html");
-        let fragment = document.createDocumentFragment();
-        let child = doc.body.firstChild;
-        while (child) {
-            fragment.appendChild(child);
-            child = doc.body.firstChild;
+function hightlight() {
+    !browser.storage.sync.get("toneHighlight").then(i => {
+        if (!i.toneHighlight) { return; } else {
+            let textNodesXpath = "/html/head/title/text()"
+                + "|/html/body//text()[not(parent::script)]";
+            let textNodes = document.evaluate(textNodesXpath, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+            let nTextNodes = textNodes.snapshotLength;
+            for (let i = 0; i < nTextNodes; i++) {
+                let textNode = textNodes.snapshotItem(i);
+                let originalText = textNode.textContent;
+                let replacedText = replace(originalText);
+                if (originalText != replacedText) {
+                    let parser = new DOMParser();
+                    let doc = parser.parseFromString(replacedText, "text/html");
+                    let fragment = document.createDocumentFragment();
+                    let child = doc.body.firstChild;
+                    while (child) {
+                        fragment.appendChild(child);
+                        child = doc.body.firstChild;
+                    }
+                    let parent = textNode.parentNode;
+                    parent.replaceChild(fragment, textNode);
+                    if (parent.localName == "textarea" && parent.value == parent.defaultValue) {
+                        let event = document.createEvent("HTMLEvents");
+                        event.initEvent("change", true, false);
+                        parent.dispatchEvent(event);
+                    }
+                }
+            }
         }
-        let parent = textNode.parentNode;
-        parent.replaceChild(fragment, textNode);
-        if (parent.localName == "textarea" && parent.value == parent.defaultValue) {
-            let event = document.createEvent("HTMLEvents");
-            event.initEvent("change", true, false);
-            parent.dispatchEvent(event);
-        }
-    }
+    });
 }
+hightlight();
