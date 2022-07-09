@@ -2,13 +2,22 @@
 
   "manifest_version": 2,
   "name": "Tone Indicators",
-  "version": "1.0.0",
-
+  "version": "2.0.0",
+  "icons":
+  {
+    "48":"icons/tone_fox.png"
+  },
   "description": "Shows you the meaning of tone indicators",
   "permissions": [
     "contextMenus",
     "notifications"
     ],
+  "content_scripts":[
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["ToneIndicatorHoverTooltip.js"]
+    }
+  ],
   "background": 
     {
       "scripts": ["ToneIndicatorContextMenu.js"]
